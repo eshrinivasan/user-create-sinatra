@@ -1,0 +1,33 @@
+.top-bar
+  Anonymous: #{@unique_id}
+  %form(action='/spreadsheet' method='post')
+    %input(type='button' value='Download' class='button' id="download")
+
+%section
+  %ul(class='todo-list')
+    - if not @todos.nil?
+      - @todos.each do |todo|
+        %li(class='todo')
+          %div.left
+            %span.voteicon
+              %form(action='/todo/vote/#{todo.id}' method='post' id='vote')
+                %input(type='button' id='submit' value='⇡' class='button')
+                %span.points
+                  #{todo.points ? todo.points : 0}  
+          %p(class='content content#{todo.flag}')
+            #{todo.content}
+          .todo-bottom-item
+            %span.deleteicon    
+              %form(action='/todo/delete/#{todo.id}' method='post' id='delete')
+                %input(type='submit' value='x' class='button')
+           
+%section
+  %form(action='/todo/new/' method='post' class='newtodo-form')
+    %textarea(placeholder='Enter Like/Wish' name='content')
+    %span.radiooptions
+      %input(type='radio' value=0 name='flag' checked='true')
+        %label like
+      %input(type='radio' value=1 name='flag')
+        %label wish
+    %input(type='submit' value='Send' class='button')
+    
