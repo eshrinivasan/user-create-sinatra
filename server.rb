@@ -50,6 +50,11 @@ class App < Sinatra::Base
          haml :index
       end
 
+      get '/download' do 
+        @todos = Todo.all
+        haml :download
+      end
+      
       get '/download.json' do
         content_type :json
         @todos = Todo.select("content, flag, points").order(points: :desc)

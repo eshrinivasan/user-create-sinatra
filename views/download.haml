@@ -1,7 +1,12 @@
+.top-bar
+  Anonymous: #{@unique_id}
+  %form(action='/spreadsheet' method='post')
+    %input(type='button' value='Download' class='button' id="download")
+
 %section
   %ul(class='todo-list')
     - if not @todos.nil?
       - @todos.each do |todo|
         %li(class='todo')
           %p(class='content')
-            #{todo.content} #{todo.points} 
+            #{todo.content} | #{todo.flag} | #{todo.points} 
