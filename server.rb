@@ -45,7 +45,6 @@ class App < Sinatra::Base
          {:value=> session[:id], :max_age => "1210000", :httponly => true }
          #binding.pry
          @team = params[:team]
-         #binding.pry
          @todos = Todo.all.order(points: :desc)
          haml :index
       end
@@ -68,7 +67,6 @@ class App < Sinatra::Base
         todo.content = params[:content]
         todo.flag = params[:flag] == "0" ? 'like' : 'wish'
         #binding.pry
-        
         if todo.valid?
           todo.save
           redirect '/'
@@ -77,16 +75,17 @@ class App < Sinatra::Base
 
       post '/todo/delete/:todo_id' do
         todo = Todo.find_by(id: params[:todo_id], user_name: @unique_id)
+        obsolete = User.find_by(voted_todo: params[:todo_id])
         user = User.find_by(voted_todo: params[:todo_id], username: @unique_id)
         #binding.pry
 
         if not todo.nil?
           todo.destroy
+          obsolete.destroy
           if not user.nil?
             user.destroy
           end
         end
-
         redirect '/'
       end
 
@@ -103,7 +102,6 @@ class App < Sinatra::Base
           user.save
         end
         todo.to_json
-        #redirect '/'
       end 
 
       Spreadsheet.client_encoding = 'UTF-8'
@@ -116,7 +114,6 @@ class App < Sinatra::Base
           App.increment()
           sheet1.row(App.count()).push todo.content, todo.flag, todo.points
         end
-
         book.write 'test.xls'
       end
 

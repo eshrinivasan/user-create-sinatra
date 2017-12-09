@@ -21,11 +21,11 @@
            
 %section
   %form(action='/todo/new/' method='post' class='newtodo-form')
-    %textarea(placeholder='Enter Like/Wish' name='content')
     %span.radiooptions
       %input(type='radio' value=0 name='flag' checked='true')
-        %label like
+        %label like   &#9829;
       %input(type='radio' value=1 name='flag')
-        %label wish
-    %input(type='submit' value='Send' class='button')
+        %label wish   &#128591;
+    %textarea(placeholder='Enter feedback...' name='content')
+    %input(type='button' value='Send' class='button' id='newpost')
     
