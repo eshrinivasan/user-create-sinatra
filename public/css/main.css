@@ -124,7 +124,7 @@ h2.sectitle {
   height: 70px;
   margin-top: 10px;
   border-radius: 6px;
-  color: #0074D9;
+  border-color: #0074D9;
 }
 
 .newtodo-form input[type=button] {
