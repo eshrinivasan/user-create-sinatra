@@ -130,12 +130,21 @@ h2.sectitle {
 .newtodo-form input[type=button] {
   color: #fff;
   width: 100%;
-  margin-top: 20px;
+  margin-top: 10px;
   padding: 7px;
   border: none;
   border-radius: 3px;
   font-size: 1em;
   background-color: #0074D9;
+}
+
+.newtodo-form input[type=button].disabled{
+  background: grey;
+  cursor:default;
+}
+
+.done-form{
+  padding:10px;
 }
 
 .todo-list {
@@ -220,6 +229,16 @@ h2.sectitle {
 }
 
 
+.newtodo-form .done{
+  margin:10px 0;
+}
+  
+.newtodo-form .done label{
+  font-size:12px;
+}
+
 input[type="button" i]:disabled{
   cursor:pointer;
 }
+
+

@@ -41,13 +41,85 @@ class App < Sinatra::Base
       end
 
       get "/" do
+        redirect "/hukka"
+      end
+
+      get "/:team" do
         response.set_cookie 'user-id',
          {:value=> session[:id], :max_age => "1210000", :httponly => true }
-         #binding.pry
-         @team = params[:team]
-         @todos = Todo.all.order(points: :desc)
+         #@todos = Todo.all.order(points: :desc)
+         @todos = Todo.where('user_name = ? and team = ?', @unique_id, params[:team].to_s).order(points: :desc)
          haml :index
       end
+
+      get "/:team/all" do
+         @todos = Todo.where('team = ?', params[:team].to_s).order(points: :desc)
+         haml :upvote
+      end
+
+      # for handling todos
+      post '/:team/todo/new/' do
+        team = params[:team]
+        todo = Todo.new
+        todo.user_name = @unique_id
+        todo.content = params[:content]
+        todo.flag = params[:flag] == "0" ? 'like' : 'wish'
+        todo.team = team
+        #binding.pry
+        if todo.valid?
+          todo.save
+          redirect '/'+team
+        end
+      end
+
+
+      ['/:team/todo/delete/:todo_id', '/:team/all/todo/delete/:todo_id'].each do | path | 
+        post path do 
+          # ...
+          team = params[:team]
+          #binding.pry
+          todo = Todo.find_by(id: params[:todo_id], user_name: @unique_id)
+          obsolete = User.find_by(voted_todo: params[:todo_id])
+          user = User.find_by(voted_todo: params[:todo_id], username: @unique_id)
+          #binding.pry
+
+          if not todo.nil?
+            todo.destroy
+            if not obsolete.nil?
+              obsolete.destroy
+            end
+            if not user.nil?
+              user.destroy
+            end
+          end
+          redirect '/'+team
+        end 
+      end 
+
+      # post '/:team/todo/delete/:todo_id' do
+      # end
+
+      ['/:team/todo/vote/:todo_id', '/:team/all/todo/vote/:todo_id'].each do | path | 
+        post path do 
+          team = params[:team]
+          user = User.find_by(voted_todo: params[:todo_id], username: @unique_id)
+          #binding.pry
+          if user.nil?
+            todo = Todo.find_by(id: params[:todo_id])
+            todo.update(:points => todo.points + 1)
+            todo.save
+            user = User.new
+            user.username = @unique_id
+            user.voted_todo = params[:todo_id]
+            user.save
+          end
+          todo.to_json
+         end 
+       end    
+
+      # post '/:team/todo/vote/:todo_id' do
+      # end 
+
 
       get '/download' do 
         @todos = Todo.all
@@ -56,53 +128,9 @@ class App < Sinatra::Base
       
       get '/download.json' do
         content_type :json
-        @todos = Todo.select("content, flag, points").order(points: :desc)
+        @todos = Todo.select("content, flag, points, team").order(points: :desc)
         @todos.to_json
       end
-
-      # for handling todos
-      post '/todo/new/' do
-        todo = Todo.new
-        todo.user_name = @unique_id
-        todo.content = params[:content]
-        todo.flag = params[:flag] == "0" ? 'like' : 'wish'
-        #binding.pry
-        if todo.valid?
-          todo.save
-          redirect '/'
-        end
-      end
-
-      post '/todo/delete/:todo_id' do
-        todo = Todo.find_by(id: params[:todo_id], user_name: @unique_id)
-        obsolete = User.find_by(voted_todo: params[:todo_id])
-        user = User.find_by(voted_todo: params[:todo_id], username: @unique_id)
-        #binding.pry
-
-        if not todo.nil?
-          todo.destroy
-          obsolete.destroy
-          if not user.nil?
-            user.destroy
-          end
-        end
-        redirect '/'
-      end
-
-      post '/todo/vote/:todo_id' do 
-        user = User.find_by(voted_todo: params[:todo_id], username: @unique_id)
-        #binding.pry
-        if user.nil?
-          todo = Todo.find_by(id: params[:todo_id])
-          todo.update(:points => todo.points + 1)
-          todo.save
-          user = User.new
-          user.username = @unique_id
-          user.voted_todo = params[:todo_id]
-          user.save
-        end
-        todo.to_json
-      end 
 
       Spreadsheet.client_encoding = 'UTF-8'
       book = Spreadsheet::Workbook.new
@@ -112,7 +140,7 @@ class App < Sinatra::Base
         todos = Todo.all.order(points: :desc)
         todos.each do |todo|
           App.increment()
-          sheet1.row(App.count()).push todo.content, todo.flag, todo.points
+          sheet1.row(App.count()).push todo.content, todo.flag, todo.points, todo.team
         end
         book.write 'test.xls'
       end
